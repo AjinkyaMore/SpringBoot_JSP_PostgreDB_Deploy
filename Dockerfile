@@ -1,23 +1,22 @@
-# Use OpenJDK as base image
-FROM eclipse-temurin:17-jdk
-
-# Set working directory
+# Importing JDK and copying required files
+FROM openjdk:17-jdk AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src src
 
-# Copy everything from the project
-COPY . .
+# Copy Maven wrapper
+COPY mvnw .
+COPY .mvn .mvn
 
-# Give execute permission to Maven Wrapper
-RUN chmod +x mvnw
+# Set execution permission for the Maven wrapper
+RUN chmod +x ./mvnw
+RUN ./mvnw clean package -DskipTests
 
-# Build the WAR file
-RUN ./mvnw clean package
+# Stage 2: Create the final Docker image using OpenJDK 19
+FROM openjdk:17-jdk
+VOLUME /tmp
 
-# Find the generated WAR file dynamically
-RUN cp target/*.war app.war
-
-# Expose the default Spring Boot port
+# Copy the JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
 EXPOSE 8080
-
-# Start the application
-CMD ["java", "-jar", "app.war"]
