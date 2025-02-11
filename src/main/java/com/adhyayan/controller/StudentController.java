@@ -15,14 +15,13 @@ import com.adhyayan.model.Student;
 import com.adhyayan.servicei.StudentServiceI;
  
 @Controller
-@RequestMapping("/")
 public class StudentController {
 
 	@Autowired
 	StudentServiceI si;
 	
 //	@RequestMapping("/")
-	@GetMapping("/home")
+	@GetMapping({"/","/home"})
 	public String homePage()
 	{
 		return "home";
